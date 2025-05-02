@@ -6,35 +6,74 @@ import matplotlib.pyplot as plt
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 
-# App
 def predictDigit(image):
     model = tf.keras.models.load_model("model/handwritten.h5")
     image = ImageOps.grayscale(image)
     img = image.resize((28,28))
     img = np.array(img, dtype='float32')
     img = img/255
-    plt.imshow(img)
-    plt.show()
     img = img.reshape((1,28,28,1))
-    pred= model.predict(img)
+    pred = model.predict(img)
     result = np.argmax(pred[0])
     return result
 
-# Streamlit 
-st.set_page_config(page_title='Reconocimiento de Dígitos escritos a mano', layout='wide')
-st.title('Reconocimiento de Dígitos escritos a mano')
-st.subheader("Dibuja el digito en el panel  y presiona  'Predecir'")
+st.set_page_config(
+    page_title='Reconocimiento de Dígitos',
+    page_icon='✏️',
+    layout='wide'
+)
 
-# Add canvas component
-# Specify canvas parameters in application
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kanit&display=swap');
+
+html, body, .stApp {
+    background: linear-gradient(to right, #2c5364, #203a43, #0f2027);
+    color: #ffffff;
+    font-family: 'Kanit', sans-serif;
+    text-align: center;
+}
+
+h1, h2, h3, h4, h5, h6, .stTitle, .stHeader {
+    color: #ffcc70;
+    text-align: center;
+}
+
+.stButton>button {
+    background-color: #ffcc70;
+    color: #1e1e1e;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 10px 20px;
+    border: none;
+}
+
+.stSidebar {
+    background-color: #ffffff22 !important;
+}
+
+.stImage>img {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.block-container {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.title('✏️ Reconocimiento de Dígitos Escritos a Mano')
+st.subheader("🧠 Dibuja un dígito en el panel y presiona 'Predecir'")
+
 drawing_mode = "freedraw"
-stroke_width = st.slider('Selecciona el ancho de línea', 1, 30, 15)
-stroke_color = '#FFFFFF' # Set background color to white
+stroke_width = st.slider('✍️ Selecciona el grosor del trazo', 1, 30, 15)
+stroke_color = '#FFFFFF'
 bg_color = '#000000'
 
-# Create a canvas component
 canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.3)",  # Fixed fill color with some opacity
+    fill_color="rgba(255, 255, 255, 0.1)",
     stroke_width=stroke_width,
     stroke_color=stroke_color,
     background_color=bg_color,
@@ -43,23 +82,18 @@ canvas_result = st_canvas(
     key="canvas",
 )
 
-# Add "Predict Now" button
-if st.button('Predecir'):
+if st.button('🔍 Predecir'):
     if canvas_result.image_data is not None:
         input_numpy_array = np.array(canvas_result.image_data)
-        input_image = Image.fromarray(input_numpy_array.astype('uint8'),'RGBA')
+        input_image = Image.fromarray(input_numpy_array.astype('uint8'), 'RGBA')
         input_image.save('prediction/img.png')
         img = Image.open("prediction/img.png")
         res = predictDigit(img)
-        st.header('El Digito es : ' + str(res))
+        st.header('🔢 El dígito es: ' + str(res))
     else:
-        st.header('Por favor dibuja en el canvas el digito.')
+        st.warning('⚠️ Por favor dibuja un número en el lienzo.')
 
-# Add sidebar
-st.sidebar.title("Acerca de:")
-st.sidebar.text("En esta aplicación se evalua ")
-st.sidebar.text("la capacidad de un RNA de reconocer") 
-st.sidebar.text("digitos escritos a mano.")
-st.sidebar.text("Basado en desarrollo de Vinay Uniyal")
-#st.sidebar.text("GitHub Repository")
-#st.sidebar.write("[GitHub Repo Link](https://github.com/Vinay2022/Handwritten-Digit-Recognition)")
+st.sidebar.title("ℹ️ Acerca de")
+st.sidebar.markdown("Esta app demuestra el reconocimiento de dígitos escritos a mano usando una red neuronal.")
+st.sidebar.markdown("Modelo entrenado con **MNIST**.")
+st.sidebar.markdown("Desarrollo basado en código de **Vinay Uniyal**.")
